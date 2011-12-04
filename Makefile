@@ -14,7 +14,7 @@ VPATH = lib
 all: $(BIN)
 
 run:
-	./test_correlation -v IMG_7088.JPG
+	./test_correlation -vg 10 IMG_7088.JPG
 
 $(BIN) : test_correlation.o $(OBJS)
 	$(CC) $(LDFLAGS) $< -o $@

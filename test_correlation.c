@@ -12,13 +12,14 @@
 static void help_and_exit( void )
 {
   printf("Help!\n");
+  printf("    -v         Verbose output\n");
+  printf("    -g <sd>    Add Gaussian noise w/ std. dev. = [sd]\n" );
   exit(-1);
 }
 
 const unsigned int SUBIMAGE_WIDTH = 640;
 const unsigned int SUBIMAGE_HEIGHT = 480;
 const unsigned int MAX_SHIFT = 50;
-const unsigned int NOISE_STDDEV = 5;
 
 static CvPoint make_subimages( IplImage *base, IplImage **one, IplImage **two )
 {
@@ -72,13 +73,21 @@ int main( int argc, char **argv )
   bool verbose = false;
   CvPoint shift;
   char c;
+  int gaussian_stddev = 0;
 
   srand(50);
 
-  while( (c = getopt( argc, argv, "v")) != -1 )
+  while( (c = getopt( argc, argv, "?hvg:")) != -1 )
     switch( c ) {
       case 'v':
         verbose = true;
+        break;
+      case 'g':
+        gaussian_stddev = atoi( optarg );
+        break;
+      case 'h':
+      case '?':
+        help_and_exit();
         break;
       default:
         printf("Don't understand option \'%c\'\n", c );
@@ -108,16 +117,20 @@ int main( int argc, char **argv )
 
       if( verbose ) printf("Shift is %d, %d\n", shift.x, shift.y );
 
-      add_gaussian_noise( imageOne, NOISE_STDDEV );
-      add_gaussian_noise( imageTwo, NOISE_STDDEV );
-
-      cvSaveImage("imageOne.png", imageOne, 0 );
-      cvSaveImage("imageTwo.png", imageTwo, 0 );
-
       break;
     default:
       printf("Need to specify an image file on the command line.\n");
   }
+
+  if( gaussian_stddev > 0 ) {
+    if( verbose ) printf("Adding gaussian noise with stddev = %d to both images\n", gaussian_stddev );
+    add_gaussian_noise( imageOne, gaussian_stddev );
+    add_gaussian_noise( imageTwo, gaussian_stddev );
+  }
+
+  cvSaveImage("imageOne.png", imageOne, 0 );
+  cvSaveImage("imageTwo.png", imageTwo, 0 );
+
 
 
 
