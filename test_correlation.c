@@ -8,6 +8,9 @@
 #include <opencv2/core/types_c.h>
 #include <opencv2/highgui/highgui_c.h>
 
+#include "lib/cross_correlation.h"
+#include "lib/phase_correlation.h"
+
 
 static void help_and_exit( void )
 {
@@ -132,7 +135,32 @@ int main( int argc, char **argv )
   cvSaveImage("imageTwo.png", imageTwo, 0 );
 
 
+  //CvMat *result = cross_correlation( imageOne, imageTwo );
+  IplImage *result = phase_correlation( imageOne, imageTwo );
 
+  double minVal, maxVal;
+  CvPoint minLoc, maxLoc;
+  cvMinMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc, NULL );
+  printf("In result array:\n");
+  printf("   Min value of %f at %d,%d\n", minVal, minLoc.x, minLoc.y );
+  printf("   Max value of %f at %d,%d\n", maxVal, maxLoc.x, maxLoc.y );
+
+  printf("At shift location (%d,%d), result value is %f\n", shift.x, shift.y, cvGetReal2D(result,shift.x+result->width/2,shift.y+result->height/2));
+
+  // Result file is 1-channel 32bit float.
+  // Convert to a 8-bit greyscale 
+  CvMat *resultGrey = cvCreateMat( result->height, result->width, CV_8UC1 );
+  cvLog( result, result );
+  cvMinMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc, NULL );
+  cvSubS( result, cvScalar( minVal, 0,0,0), result, NULL );
+  cvConvertScale( result, resultGrey, 255/(maxVal-minVal), 0 );
+
+  cvMinMaxLoc( resultGrey, &minVal, &maxVal, &minLoc, &maxLoc, NULL );
+  printf("In result greyscale array:\n");
+  printf("   Min value of %f at %d,%d\n", minVal, minLoc.x, minLoc.y );
+  printf("   Max value of %f at %d,%d\n", maxVal, maxLoc.x, maxLoc.y );
+
+  cvSaveImage("ccorr.png", resultGrey, 0 );
 
 
   return 0;

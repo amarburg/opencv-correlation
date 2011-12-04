@@ -1,9 +1,9 @@
 
 BIN = test_correlation 
-OBJS = 
+OBJS = cross_correlation.o phase_correlation.o
 
-CFLAGS = -Wall 
-LDFLAGS = -lopencv_core -lopencv_highgui
+CFLAGS = -Wall  -ggdb
+LDFLAGS = -lopencv_core -lopencv_highgui -lfftw3
 VPATH = lib
 
 # If OpenCV is installed in a non-standard location
@@ -13,11 +13,11 @@ VPATH = lib
 
 all: $(BIN)
 
-run:
+run: $(BIN)
 	./test_correlation -vg 10 IMG_7088.JPG
 
 $(BIN) : test_correlation.o $(OBJS)
-	$(CC) $(LDFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 %.o : %.cpp
 	$(CXX) -c $(CFLAGS) $< -o $@
