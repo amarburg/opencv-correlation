@@ -4,6 +4,6 @@
 
 #include <opencv2/core/types_c.h>
 
-CvMat *phase_correlation( IplImage *ref, IplImage *tmpl );
+IplImage *phase_correlation( IplImage *ref, IplImage *tmpl );
 
 #endif

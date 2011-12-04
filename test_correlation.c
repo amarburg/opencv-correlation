@@ -38,8 +38,8 @@ static CvPoint make_subimages( IplImage *base, IplImage **one, IplImage **two )
   CvPoint cornerTwo = cvPoint( xcorner+xshift, ycorner+yshift );
 
   //printf("Shifting by %d, %d\n", xshift,yshift );
-  //printf("Image one at %d, %d\n", cornerOne.x, cornerOne.y );
-  //printf("Image two at %d, %d\n", cornerTwo.x, cornerTwo.y );
+  printf("Image one at %d, %d\n", cornerOne.x, cornerOne.y );
+  printf("Image two at %d, %d\n", cornerTwo.x, cornerTwo.y );
 
   CvRect rectOne = cvRect( cornerOne.x, cornerOne.y, subimageSize.width, subimageSize.height );
   cvSetImageROI( base, rectOne );
@@ -51,6 +51,7 @@ static CvPoint make_subimages( IplImage *base, IplImage **one, IplImage **two )
   cvSetImageROI( base, rectOne );
   *two = cvCreateImage( subimageSize, base->depth, base->nChannels );
   cvCopy( base, *two, NULL );
+  cvResetImageROI(base);
 
   return shift;
 }
@@ -134,9 +135,12 @@ int main( int argc, char **argv )
   cvSaveImage("imageOne.png", imageOne, 0 );
   cvSaveImage("imageTwo.png", imageTwo, 0 );
 
-
   //CvMat *result = cross_correlation( imageOne, imageTwo );
   IplImage *result = phase_correlation( imageOne, imageTwo );
+
+  // Try monkeying with the values at DC
+  CvScalar avg = cvAvg( result, NULL );
+  cvSetReal2D( result, 0, 0, avg.val[0] );
 
   double minVal, maxVal;
   CvPoint minLoc, maxLoc;
@@ -145,7 +149,8 @@ int main( int argc, char **argv )
   printf("   Min value of %f at %d,%d\n", minVal, minLoc.x, minLoc.y );
   printf("   Max value of %f at %d,%d\n", maxVal, maxLoc.x, maxLoc.y );
 
-  printf("At shift location (%d,%d), result value is %f\n", shift.x, shift.y, cvGetReal2D(result,shift.x+result->width/2,shift.y+result->height/2));
+  //printf("At shift location (%d,%d), result value is %f\n", shift.x, shift.y, cvGetReal2D(result,shift.x+result->width/2,shift.y+result->height/2));
+  printf("At shift location (%d,%d), result value is %f\n", shift.x, shift.y, cvGetReal2D(result,shift.x,shift.y) );
 
   // Result file is 1-channel 32bit float.
   // Convert to a 8-bit greyscale 
