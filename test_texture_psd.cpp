@@ -20,6 +20,7 @@ static void help_and_exit( void )
 
 const unsigned int FFT_WIDTH = 16;
 const unsigned int FFT_HEIGHT = FFT_WIDTH;
+const float WINDOW_SIGMA = 10.0;
 
 
 int main( int argc, char **argv )
@@ -80,6 +81,10 @@ int main( int argc, char **argv )
   // Copy image data to data_in
   int k = 0;
   float offset = 1.0;
+  float width2 = (FFT_WIDTH-1)/2.0;
+
+  // Probably silly to implement this by hand but whatever.
+double window, window_pre = 1.0; /// (2.0*M_PI*WINDOW_SIGMA*WINDOW_SIGMA);
   for( unsigned int r = 0; r < FFT_HEIGHT; r++ ) {
     for( unsigned int c = 0; c < FFT_WIDTH;  c++ ) {
       //data_in[k][0] = 1.0 * imageOne.at<unsigned char>( x+c, y+r );
@@ -87,11 +92,14 @@ int main( int argc, char **argv )
       // By FFTW FAQ 3.11 this will offset the origin to
       // the center of the output (aka shifting everything by
       // Nyquist frequency
-
       offset = ((r+c) % 2 == 0) ? -1.0 : 1.0;
       //offset = pow( -1, r+c );
+      
+      window = window_pre * exp( -1.0 / (2.0* WINDOW_SIGMA*WINDOW_SIGMA) * ((r-width2)*(r-width2) + (c-width2)*(c-width2)));
 
-      data_in[k][0] = offset * imageOne.at<unsigned char>( x+c, y+r );
+      printf("At %d,%d, window = %0.2e\n", r,c,window );
+
+      data_in[k][0] = offset * window * imageOne.at<unsigned char>( x+c, y+r );
       data_in[k][1] = 0.0;
       k++;
     }
